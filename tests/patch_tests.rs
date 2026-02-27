@@ -76,15 +76,17 @@ fn scan_directory_collects_relative_paths_and_hashes() -> Result<()> {
 
     assert_eq!(files.len(), 2);
     assert_eq!(
-        files
+        &files
             .get(&file_a.strip_prefix(dir.path())?.to_path_buf())
-            .unwrap(),
+            .unwrap()
+            .hash,
         &compute_file_hash(&file_a)?
     );
     assert_eq!(
-        files
+        &files
             .get(&file_b.strip_prefix(dir.path())?.to_path_buf())
-            .unwrap(),
+            .unwrap()
+            .hash,
         &compute_file_hash(&file_b)?
     );
     Ok(())

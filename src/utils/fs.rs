@@ -5,10 +5,16 @@ use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
-use super::hash::compute_file_hash;
+use super::hash::{HashResult, compute_file_hash};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FileInfo {
+    pub hash: HashResult,
+    pub fsize: usize,
+}
 
 /// 获取目录下所有文件的相对路径和哈希值
-pub fn scan_directory(dir: &Path) -> Result<HashMap<PathBuf, String>> {
+pub fn scan_directory(dir: &Path) -> Result<HashMap<PathBuf, FileInfo>> {
     let mut files = HashMap::new();
 
     if !dir.exists() {
@@ -16,15 +22,19 @@ pub fn scan_directory(dir: &Path) -> Result<HashMap<PathBuf, String>> {
     }
 
     for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
-        if entry.file_type().is_file() {
-            let path = entry.path();
-            let relative_path = path
-                .strip_prefix(dir)
-                .with_context(|| format!("无法获取相对路径: {:?}", path))?
-                .to_path_buf();
-            let hash = compute_file_hash(path)?;
-            files.insert(relative_path, hash);
+        if !entry.file_type().is_file() {
+            continue;
         }
+
+        let path = entry.path();
+        let relative_path = path
+            .strip_prefix(dir)
+            .with_context(|| format!("无法获取相对路径: {:?}", path))?
+            .to_path_buf();
+
+        let hash = compute_file_hash(path)?;
+        let fsize = path.metadata()?.len() as usize;
+        files.insert(relative_path, FileInfo { hash, fsize });
     }
 
     Ok(files)

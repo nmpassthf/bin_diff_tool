@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::utils::HashResult;
+
 /// 补丁包元数据
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Metadata {
@@ -37,7 +39,7 @@ impl Default for Metadata {
 /// 文件校验和信息
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Checksums {
-    pub added: HashMap<String, String>,
+    pub added: HashMap<String, HashResult>,
     pub modified: HashMap<String, ModifiedChecksum>,
     pub deleted: Vec<String>,
 }
@@ -64,12 +66,12 @@ impl Checksums {
 /// 修改文件的校验和
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModifiedChecksum {
-    pub original: String,
-    pub modified: String,
+    pub original: HashResult,
+    pub modified: HashResult,
 }
 
 impl ModifiedChecksum {
-    pub fn new(original: String, modified: String) -> Self {
+    pub fn new(original: HashResult, modified: HashResult) -> Self {
         Self { original, modified }
     }
 }

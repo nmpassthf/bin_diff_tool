@@ -10,7 +10,7 @@
 
 ## 特性
 
-无系统依赖和系统内程序依赖, 纯 Rust 实现. 可跨平台使用 (Windows, Linux, MacOS).
+无外部程序依赖, 纯 Rust 实现. 可跨平台使用 (Windows, Linux, MacOS).
 
 ## 使用方法
 
@@ -23,9 +23,9 @@
 ## 补丁包结构
 
 补丁包为 tar.gz 格式，包含以下内容：
+
 - `added/` 目录：新增文件
 - `deleted/` 目录：删除文件列表
 - `modified/` 目录：修改文件的差异数据
 - `metadata.toml` 文件：补丁包元数据，包含版本信息、生成时间等
 - `checksums.toml` 文件：补丁包内文件的校验和信息
-

@@ -37,7 +37,6 @@ use anyhow::{Context, Result, bail};
 use bin_diff_tool::merge_patches;
 use chrono::DateTime;
 use chrono::Utc;
-use std::ffi::OsStr;
 use std::io::{self, Read, Write};
 use std::path::Path;
 use std::path::PathBuf;
@@ -93,7 +92,7 @@ fn create_patch_list(args: Vec<PathBuf>) -> Result<Vec<Patch>> {
     Ok(patches)
 }
 
-fn parse_create_time(patch: &PathBuf) -> Result<DateTime<Utc>> {
+fn parse_create_time(patch: &Path) -> Result<DateTime<Utc>> {
     let file = std::fs::File::open(patch).context("文件打开失败")?;
     let gz = GzDecoder::new(file);
     let mut tar = Archive::new(gz);
@@ -101,7 +100,11 @@ fn parse_create_time(patch: &PathBuf) -> Result<DateTime<Utc>> {
     for entry in tar.entries()? {
         let mut entry = entry?;
 
-        if entry.path()?.file_name() != Some(OsStr::new("metadata.toml")) {
+        if entry
+            .path()?
+            .file_name()
+            .is_none_or(|name| name != "metadata.toml")
+        {
             continue;
         }
 
@@ -121,7 +124,7 @@ fn parse_create_time(patch: &PathBuf) -> Result<DateTime<Utc>> {
     bail!("数据包失效：无法找到 metadata.toml")
 }
 
-fn create_merge_tgz(patches: &Vec<Patch>, temp_dir: &PathBuf) -> Result<PathBuf> {
+fn create_merge_tgz(patches: &[Patch], temp_dir: &Path) -> Result<PathBuf> {
     let (first, rest) = patches.split_first().context("补丁文件未找到")?;
     let mut current = first.path.clone();
 
